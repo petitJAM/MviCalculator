@@ -32,6 +32,7 @@ dependencies {
     ext.supportLibraryVersion = '26.1.0'
     implementation "com.android.support:appcompat-v7:$supportLibraryVersion"
     implementation "com.android.support:design:$supportLibraryVersion"
+//    implementation "com.android.support:support-v4:$supportLibraryVersion"
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
 
     ext.rxJavaVersion = '2.1.6'
@@ -42,4 +43,6 @@ dependencies {
     ext.rxBindingVersion = '2.0.0'
     implementation "com.jakewharton.rxbinding2:rxbinding:$rxBindingVersion"
     implementation "com.jakewharton.rxbinding2:rxbinding-kotlin:$rxBindingVersion"
+
+    implementation 'com.jakewharton.timber:timber:4.6.0'
 }

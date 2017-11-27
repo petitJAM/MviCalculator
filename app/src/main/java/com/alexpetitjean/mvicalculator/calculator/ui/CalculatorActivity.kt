@@ -3,10 +3,8 @@ package com.alexpetitjean.mvicalculator.calculator.ui
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.alexpetitjean.mvicalculator.R
-import com.alexpetitjean.mvicalculator.util.toast
 import com.jakewharton.rxbinding2.view.RxView
 import io.reactivex.Observable
-import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.activity_calculator.*
 
 class CalculatorActivity
@@ -16,55 +14,30 @@ class CalculatorActivity
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_calculator)
-
-//        numericInputIntent().subscribeBy(
-//                onNext = { numeric ->
-//                    toast("$numeric")
-//                })
-//
-//        operatorInputIntent().subscribeBy(
-//                onNext = { operator ->
-//                    toast("$operator")
-//                })
-//
-//        functionInputIntent().subscribeBy(
-//                onNext = { function ->
-//                    toast("$function")
-//                })
-
-        val viewStateOutput: Observable<CalculatorContract.CalculatorViewState> =
-                Observable.merge(listOf(numericInputIntent(), operatorInputIntent(), functionInputIntent()))
-                        .scan(emptyList<Input>(), { list, newInput ->
-                            if (newInput is Input.Function) {
-                                when(newInput.function) {
-                                    "delete" -> list.dropLast(1)
-                                    "clear" -> emptyList()
-                                    else -> list
-                                }
-                            } else if (newInput is Input.Operator && list.last() is Input.Operator) {
-                                list.dropLast(1).plus(newInput)
-                            } else {
-                                list.plus(newInput)
-                            }
-                        })
-                        .map {
-                            CalculatorContract.CalculatorViewState(it)
-                        }
-
-        viewStateOutput
-                .startWith(CalculatorContract.CalculatorViewState.EMPTY)
-                .subscribeBy(
-                        onNext = { viewState ->
-                            render(viewState)
-                        },
-                        onError = { throwable ->
-                            throwable.printStackTrace()
-                            toast("exploded")
-                        })
+        CalculatorPresenter(this)
     }
 
-    override fun render(viewState: CalculatorContract.CalculatorViewState) {
-        expressionDisplay.text = viewState.display()
+    override fun onStart() {
+        super.onStart()
+        presenter.subscribe()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        presenter.unsubscribe()
+    }
+
+    override lateinit var presenter: CalculatorContract.Presenter
+
+    override fun render(viewState: CalculatorViewState) {
+        expressionDisplay.text = viewState.inputs.joinToString(separator = "") { input ->
+            when (input) {
+                is Input.Numeric -> input.value.toString()
+                is Input.Operator -> " ${input.operator} "
+                is Input.Function -> " ${input.function} " // TODO: this is janko. functions should not be `Input`s
+                // Maybe it's not jank?
+            }
+        }
     }
 
     override fun numericInputIntent(): Observable<Input.Numeric> {
@@ -90,8 +63,9 @@ class CalculatorActivity
     }
 
     override fun functionInputIntent(): Observable<Input.Function> {
+        val inputEquals = RxView.clicks(functionInputEquals).map { Input.Function.EQUALS }
         val inputDelete = RxView.clicks(functionInputDelete).map { Input.Function.DELETE }
         val inputClear = RxView.clicks(functionInputClear).map { Input.Function.CLEAR }
-        return Observable.merge(listOf(inputDelete, inputClear))
+        return Observable.merge(listOf(inputEquals, inputDelete, inputClear))
     }
 }

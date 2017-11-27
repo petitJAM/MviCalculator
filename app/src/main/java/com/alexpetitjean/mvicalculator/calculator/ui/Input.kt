@@ -15,6 +15,7 @@ sealed class Input {
 
     data class Function(val function: String) : Input() {
         companion object {
+            val EQUALS = Function("equals")
             val DELETE = Function("delete")
             val CLEAR = Function("clear")
         }

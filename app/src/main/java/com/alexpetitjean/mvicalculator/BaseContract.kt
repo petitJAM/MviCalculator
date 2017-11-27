@@ -2,9 +2,13 @@ package com.alexpetitjean.mvicalculator
 
 interface BaseContract {
 
-    interface BaseView<in ViewState> {
+    interface BaseView<T, in ViewState> {
+        var presenter: T
         fun render(viewState: ViewState)
     }
 
-    interface BasePresenter
+    interface BasePresenter {
+        fun subscribe()
+        fun unsubscribe()
+    }
 }
