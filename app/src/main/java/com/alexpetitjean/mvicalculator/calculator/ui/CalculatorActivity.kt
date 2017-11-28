@@ -33,7 +33,7 @@ class CalculatorActivity
         expressionDisplay.text = viewState.inputs.joinToString(separator = "") { input ->
             when (input) {
                 is Input.Numeric -> input.value.toString()
-                is Input.Operator -> " ${input.operator} "
+                is Input.Operator -> input.operator
                 is Input.Function -> " ${input.function} " // TODO: this is janko. functions should not be `Input`s
                 // Maybe it's not jank?
             }
